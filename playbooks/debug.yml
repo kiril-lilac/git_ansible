@@ -1,0 +1,12 @@
+---
+
+- name: Debug
+  hosts: rhnodes
+  become: yes
+
+  tasks:
+    - name: Display the "output" variable
+      ansible.builtin.debug:
+       var: output
+       verbosity: 2
+

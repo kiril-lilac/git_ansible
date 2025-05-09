@@ -1,0 +1,101 @@
+---
+
+- name: Install prometheus
+  hosts: 192.168.1.14
+  become: yes
+  gather_facts: no
+
+  vars:
+    bin_dir: /usr/local/bin
+    etc_dir: /etc/prometheus 
+    package: prometheus-2.37.0.linux-amd64
+
+  tasks:
+
+  - name: Create user
+    ansible.builtin.user:
+      name: prometheus
+      create_home: false
+      shell: /bin/false
+    register: user_output
+
+  - name: Create installation folders
+    ansible.builtin.file: 
+      path: "{{ item }}"
+      owner: prometheus
+      state: directory
+      group: prometheus
+    loop:
+      - /etc/prometheus
+      - /var/lib/prometheus
+    register: folders_output
+
+  - name: Download installation file
+    ansible.builtin.get_url:
+      url: https://github.com/prometheus/prometheus/releases/download/v2.37.0/prometheus-2.37.0.linux-amd64.tar.gz
+      dest: /tmp
+
+  - name: Unarchive installation files
+    ansible.builtin.unarchive:
+      src: /tmp/{{ package }}.tar.gz
+      dest: /tmp
+      remote_src: true
+
+  - name: Copy executable files
+    ansible.builtin.copy:
+      src: "{{ item }}"
+      dest: "{{ bin_dir }}"
+      owner: prometheus
+      group: prometheus
+      remote_src: true
+    loop:
+      - /tmp/{{ package }}/prometheus
+      - /tmp/{{ package }}/promtool
+
+  - name: Copy libraries
+    ansible.builtin.copy:
+      src: "{{ item }}"
+      dest: "{{ etc_dir }}"
+      owner: prometheus
+      group: prometheus
+      remote_src: true
+    with_items:
+      - /tmp/{{ package }}/consoles/
+      - /tmp/{{ package }}/console_libraries/
+
+  - name: Copy prometheus yaml file
+    ansible.builtin.copy:
+      src: /tmp/{{ package }}/prometheus.yml
+      dest: "{{ etc_dir }}"
+      owner: prometheus
+      group: prometheus
+      remote_src: true
+
+#  - name: Configure systemd
+#    ansible.builtin.shell: "sudo -u prometheus /usr/local/bin/prometheus --config.file /etc/prometheus/prometheus.yml --storage.tsdb.path /var/lib/prometheus/ --web.console.templates=/etc/prometheus/consoles --web.console.libraries=/etc/prometheus/console_libraries"
+#    register: systemd_ouput
+
+
+  - name: Create the services
+    ansible.builtin.template:
+      src: /home/ansible/playbooks/prometheus/templates/prometheus.service.j2
+      dest: /etc/systemd/system/prometheus.service
+      owner: prometheus
+      group: prometheus
+
+  - name: Start the service
+    ansible.builtin.systemd:
+      state: started
+      name: prometheus
+      daemon_reload: true
+      enabled: true
+
+  - name: Get the status
+    ansible.builtin.systemd:
+      name: prometheus
+    register: systemd_output
+
+  - debug:
+      msg: "{{ systemd_output }}"
+
+

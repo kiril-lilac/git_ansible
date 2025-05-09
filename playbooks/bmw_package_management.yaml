@@ -1,0 +1,29 @@
+---
+
+- name: BMW Package management
+  hosts: rhnodes
+  gather_facts: no
+  become: yes
+
+  tasks:
+
+  - name: Remove vsftpd
+    ansible.builtin.dnf:
+      name: vsftpd
+      state: absent
+
+  - name: Install samba
+    ansible.builtin.dnf:
+      name: samba.x86_64
+      state: present
+
+ 
+  - name: Restart firewalld
+    systemd:
+      state: restarted
+      daemon_reload: true
+      name: firewalld
+    register: firewalld_status
+
+    debug:
+      msg: " {{ stdout.firewalld_status }} "

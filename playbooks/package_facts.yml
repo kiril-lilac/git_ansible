@@ -1,0 +1,15 @@
+---
+
+- name: Display installed packages
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Gather info on installed packages
+      ansible.builtin.package_facts:
+
+    - name: Display NetworkManager version
+      ansible.builtin.user:
+        state: present
+        name: John
+      when: ansible_facts['packages']['systemd'] is defined

@@ -1,0 +1,59 @@
+---
+
+- name: Install package
+  hosts: rhnodes
+  become: yes
+
+  vars:
+    ftp_pkg: ftpd
+    ftp_svc: ftpd
+    packages:
+      - web: httpd
+      - db: mariadb 
+
+          
+
+   tasks:
+
+     - name: Install FTP
+       ansible.builtin.dnf:
+         name: "{{ ftp_pkg }}"
+         state: latest
+    
+     - name: Verify FTP is running
+       ansible.builtin.service:
+          name: "{{ ftp_svc }}"
+          state: started
+          enabled: true
+
+     - name: Check if users exists
+       ansible.builtin.user:
+         name: kmavrodiev
+       register: check_user
+
+     - ansible.builtin.debug:
+          msg: "{{ check_user.stdout }}"
+
+     - name: Install multiple packages
+       ansible.builtin.dnf:
+         name: "{{ item }"
+         state: latest
+       loop: "{{ packages }}"
+       register: packages_out
+
+     - ansible.builtin.debug:
+         msg: "{{ packages_out.stdout }}"
+
+     - name: Install not installed
+         ansible.builtin.dnf:
+         name: vsftpd
+       register: vsftpd_out
+
+     - ansible.builtin.debug:
+         msg: "{{ vsftpd_out.stdout }}"
+
+     - name: Install
+       ansible.builtin.dnf:
+         name: vsftpd
+         state: latest
+       when: "{{ vsftpd_out }}" != 0

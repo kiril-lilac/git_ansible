@@ -1,0 +1,52 @@
+# Fix the uri
+# Fix the template
+
+
+---
+- name: Install node exporter
+  hosts: n/a
+  become: true
+  gather_facts: no
+
+  vars:
+    package: node_exporter-1.8.2.linux-amd64
+
+  tasks:
+
+  - name: Download the package
+    uri: 
+
+  - name: Unarchive package
+    ansible.builtin.unarchive:
+      src: /tmp/{{ package }}.tar.gz
+      dest: /tmp
+      remote_src: yes
+
+  - name: Create user
+    user:
+      name: node_exporter
+      create_home: false
+      shell: /usr/bin/false 
+
+  - name: Copy files
+    copy:
+      src: /tmp/{{ package }}/node_exporter
+      dest: /usr/local/bin
+      owner: node_exporter
+      group: node_exporter
+      remote_src: true
+
+  - name: Create the service
+    template:
+      src: /home/ansible/playbooks/prometheus/templates/node_exporter.service.j2
+      dest: /etc/systemd/system/node_exporter.service
+
+  - name: Start the service
+    systemd:
+      name: node_exporter
+      daemon_reload: true
+      enabled: true
+      state: started
+
+ 
+ 

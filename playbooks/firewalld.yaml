@@ -1,0 +1,14 @@
+---
+
+  - name: BMW Package management
+    hosts: rhnodes
+    gather_facts: no
+    become: yes
+     
+    tasks:
+  
+    - name: Firewall
+      firewalld:
+        port: 8081/tcp
+        permanent: yes
+        state: enabled

@@ -1,0 +1,11 @@
+---
+
+- name: Gather facts
+  hosts: 192.168.1.18
+  become: yes
+
+  tasks:
+    
+    - name: Gather facts
+      ansible.builtin.debug:
+        var: ansible_facts

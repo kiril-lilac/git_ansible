@@ -1,0 +1,29 @@
+---
+
+- name: BMW Management
+  hosts: rhnodes
+  gather_facts: no
+  become: yes
+  
+  tasks:
+
+  - name: Install samba
+    ansible.builtin.dnf:
+      name: samba.x86_64
+      state: present
+    register: samba_status
+
+  - name: Install samba
+    ansible.builtin.dnf:
+      name: vsftpd
+      state: present
+    register: vsftpd_status
+  
+  - name: debug
+    vars:
+      msg:  |
+               Samba  " {{ samba_status }} "
+               Vsftpd " {{ vsftpd_status }} "
+    
+    debug:
+      msg: 
