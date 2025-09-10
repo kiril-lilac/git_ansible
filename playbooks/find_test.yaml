@@ -1,0 +1,24 @@
+
+- name: Find files
+  hosts: localhost
+  gather_facts: no
+  become: true
+
+
+  tasks:
+    - name: Find file
+      find:
+        paths: /home
+        mindepth: 6
+        maxdepth: 6
+        file_type: file
+      register: find_output
+
+    - debug:
+        msg: "{{ find_output }}"
+
+
+
+
+
+

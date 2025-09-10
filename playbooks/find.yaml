@@ -4,25 +4,15 @@
   gather_facts: no
   become: true
 
-  vars_prompt:
-    - name: dir
-      prompt: "What dir are you looking in?"
-      private: false
-
-    - name: file
-      prompt: "What file are you looking for?"
-      private: false
 
   tasks:
     - name: Find file
       find:
-        paths: "{{ dir }}"
-        patterns: "{{ file }}"
-        file_type: file
+        paths: /home
       register: find_output
 
     - debug:
-        msg: "{{ find_output }}"
+        var: find_output.files
 
 
 
