@@ -1,0 +1,195 @@
+---
+- name: Kubernetes Installation
+  hosts: k8s
+  become: true
+  gather_facts: no
+
+  tasks:
+
+    - name: Disable all swap
+      ansible.builtin.command: swapoff -a
+
+
+    - name: Comment out swap entries in /etc/fstab
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^([^#].*\sswap\s+.*)$'
+        replace: '# \\1'
+        backup: yes
+
+
+    - name: Add entries to /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^{{ item.ip }}\s+{{ item.hostname }}$'
+        line: '{{ item.ip }} {{ item.hostname }}'
+        state: present
+      loop:
+        - { ip: '192.168.1.21', hostname: 'K8s-master01' }
+        - { ip: '192.168.1.22', hostname: 'K8s-worker01' }
+        - { ip: '192.168.1.23', hostname: 'k8s-worker02' }
+
+    - name: Set SELinux to permissive mode immediately
+      ansible.builtin.command: setenforce 0
+      when: ansible_selinux.status == "Enforcing"
+
+    - name: Set SELINUX=permissive in /etc/sysconfig/selinux config file
+      ansible.builtin.replace:
+        path: /etc/sysconfig/selinux
+        regexp: '^SELINUX=enforcing'
+        replace: 'SELINUX=permissive'
+        backup: yes
+
+    - name: Open TCP ports permanently in firewalld
+      ansible.posix.firewalld:
+        port: "{{ item }}/tcp"
+        permanent: true
+        state: enabled
+      loop:
+        - 6443
+        - 2379
+        - 2380
+        - 10250
+        - 10251
+        - 10252
+        - 10257
+        - 10259
+        - 179
+
+    - name: Open UDP port 4789 permanently in firewalld
+      ansible.posix.firewalld:
+        port: 4789/udp
+        permanent: true
+        state: enabled
+
+    - name: Reload firewalld to apply changes
+      command: firewall-cmd --reload
+
+    - name: Create /etc/modules-load.d/containerd.conf with required modules
+      become: true
+      copy:
+        dest: /etc/modules-load.d/containerd.conf
+        content: |
+          overlay
+          br_netfilter
+        mode: '0644'
+
+    - name: Load overlay kernel module
+      become: true
+      community.general.modprobe:
+        name: overlay
+        state: present
+
+    - name: Load br_netfilter kernel module
+      become: true
+      community.general.modprobe:
+        name: br_netfilter
+        state: present
+
+    - name: Set sysctl parameters for Kubernetes
+      become: true
+      ansible.posix.sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: yes
+        sysctl_file: /etc/sysctl.d/k8s.conf
+      loop:
+        - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+        - { name: 'net.ipv4.ip_forward', value: '1' }
+        - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+
+    - name: Reload all sysctl settings from system config files
+      become: true
+      command: sysctl --system
+
+    - name: Add Docker CE repository
+      become: true
+      ansible.builtin.yum_repository:
+        name: docker-ce-stable
+        description: Docker CE Stable - $basearch
+        baseurl: https://download.docker.com/linux/centos/$releasever/$basearch/stable
+        gpgcheck: yes
+        gpgkey: https://download.docker.com/linux/centos/gpg
+        enabled: yes
+        state: present
+
+    - name: Install containerd.io package
+      become: true
+      ansible.builtin.dnf:
+        name: containerd.io
+        state: present
+
+
+    - name: Generate default containerd config
+      become: true
+      command: containerd config default
+      register: containerd_config
+
+    - name: Write default containerd config to /etc/containerd/config.toml
+      become: true
+      copy:
+        dest: /etc/containerd/config.toml
+        content: "{{ containerd_config.stdout }}"
+        mode: '0644'
+
+    - name: Enable systemd cgroups in containerd config
+      become: true
+      replace:
+        path: /etc/containerd/config.toml
+        regexp: '^SystemdCgroup\s*=\s*false'
+        replace: 'SystemdCgroup = true'
+
+    - name: Restart containerd service
+      become: true
+      ansible.builtin.systemd:
+        name: containerd
+        state: restarted
+        enabled: yes
+
+
+    - name: Check containerd service status
+      become: true
+      command: systemctl status containerd
+      register: containerd_status
+      ignore_errors: yes
+
+    - name: Display containerd service status
+      debug:
+        var: containerd_status.stdout
+
+
+    - name: Add Kubernetes repo file
+      become: true
+      copy:
+        dest: /etc/yum.repos.d/kubernetes.repo
+        content: |
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
+          exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+        mode: '0644'
+
+
+    - name: Install kubelet, kubeadm, kubectl disabling excludes for kubernetes repo
+      become: true
+      shell: sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+
+    - name: Enable and start kubelet service
+      become: true
+      ansible.builtin.systemd:
+        name: kubelet
+        enabled: yes
+        state: started
+
+    - name: Enable and start kubelet service
+      become: true
+      ansible.builtin.systemd:
+        name: kubelet
+        enabled: yes
+        state: started
+    
