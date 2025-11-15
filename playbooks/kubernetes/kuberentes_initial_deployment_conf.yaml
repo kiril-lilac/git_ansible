@@ -25,13 +25,13 @@
         line: '{{ item.ip }} {{ item.hostname }}'
         state: present
       loop:
-        - { ip: '192.168.1.21', hostname: 'K8s-master01' }
-        - { ip: '192.168.1.22', hostname: 'K8s-worker01' }
-        - { ip: '192.168.1.23', hostname: 'k8s-worker02' }
+        - { ip: '192.168.1.22', hostname: 'k8s-master01' }
+        - { ip: '192.168.1.23', hostname: 'k8s-worker01' }
+        - { ip: '192.168.1.24', hostname: 'k8s-worker02' }
 
-    - name: Set SELinux to permissive mode immediately
-      ansible.builtin.command: setenforce 0
-      when: ansible_selinux.status == "Enforcing"
+#    - name: Set SELinux to permissive mode immediately
+#      ansible.builtin.command: setenforce 0
+#      when: ansible_selinux.status == "Enforcing"
 
     - name: Set SELINUX=permissive in /etc/sysconfig/selinux config file
       ansible.builtin.replace:
