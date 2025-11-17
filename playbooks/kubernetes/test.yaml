@@ -1,0 +1,18 @@
+- name: Kubernetes Installation
+  hosts: k8s
+  become: true
+  gather_facts: no
+
+  tasks:
+
+    - name: List server master
+      debug:
+        msg: "{{ inventory_hostname }}"
+      when: role is defined and role == 'master'
+
+
+    - name: List server slave
+      debug:
+        msg: "{{ inventory_hostname }}"
+      when: role is defined and role == 'node'
+
