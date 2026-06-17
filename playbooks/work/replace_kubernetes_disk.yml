@@ -14,6 +14,9 @@
     shell: pvs
     register: pvs_output
 
-  - debug:
-      msg: "{{ vgs_output.stdout_lines }}"
+  - name: Show volume info
+    debug:
+      msg:
+          - "{{ vgs_output.stdout_lines }}"  
+          - "{{ pvs_output.stdout_lines }}"
            
