@@ -87,4 +87,14 @@
     command: vgremove -y {{ vg_name }}
     when: vg_exists
 
+  - name: Get volume group info
+    shell: vgs
+    register: vgs_output4
+
+  - debug:
+      msg: "{{ vgs_output4.stdout_lines }}"
+
+  - name: Verify groups again
+    pause:
+
 
