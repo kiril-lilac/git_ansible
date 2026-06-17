@@ -1,0 +1,8 @@
+---
+
+- name: Main playbook
+  hosts: k8s
+
+  tasks:
+  - import_tasks: install_git.yml
+  

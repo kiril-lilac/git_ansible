@@ -1,0 +1,6 @@
+- name: Check httpd version
+  shell: rpm -qa | grep "^httpd-[[:digit:]]"
+  register: version_output
+
+- debug:
+    msg: "{{ version_output.stdout }}"

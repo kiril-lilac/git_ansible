@@ -1,0 +1,14 @@
+---
+
+- name: Get fs info
+  hosts: k8s
+
+  tasks:
+
+  - name: ls info
+    command: lsl
+    register: lsl_output 
+    failed_when: lsl_output.rc >= 2
+
+  - debug:
+      msg: "{{ lsl_output.rc }}"

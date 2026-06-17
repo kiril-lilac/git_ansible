@@ -1,0 +1,7 @@
+---
+# tasks file for nginx
+
+- name: Update nginx
+  dnf:
+    name: nginx
+    state: latest

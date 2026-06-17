@@ -1,0 +1,8 @@
+---
+
+- name: Update nginx and httpd
+  hosts: k8s
+  
+  roles:
+  - httpd
+  - nginx

@@ -1,0 +1,19 @@
+---
+
+- name: Update and restart httpd
+  hosts: k8s
+
+  tasks:
+  - name: Update httpd
+    dnf:
+      name: httpd
+      state: latest
+    notify: restart_task
+
+  handlers:
+
+  - name: Restart httpd
+    systemd:
+      name: httpd
+      state: restarted
+    listen: restart_task

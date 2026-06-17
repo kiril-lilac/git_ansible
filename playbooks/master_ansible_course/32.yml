@@ -1,0 +1,15 @@
+- name: "Ansible Delegate_to examples"
+
+  hosts: k8s[0]
+
+  tasks:
+
+    - name: Run hostname
+
+      command: hostname
+
+      delegate_to: localhost
+
+      register: out
+
+    - debug: var=out.stdout_lines

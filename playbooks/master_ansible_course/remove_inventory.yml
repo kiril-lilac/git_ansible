@@ -1,0 +1,13 @@
+---
+
+- name: create devops
+  hosts: k8s
+  gather_facts: no
+
+  tasks:
+
+    - name: create devops
+      file:
+        path: /etc/devops.txt
+        state: touch
+

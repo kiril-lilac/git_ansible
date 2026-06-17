@@ -1,0 +1,6 @@
+---
+- name: Playbook
+  hosts: k8s
+  tasks:
+    - name: ensure file
+      copy: src=/home/ansible/git_ansible/inventory/inventory_default_switch dest=/etc/inventory_default_switch

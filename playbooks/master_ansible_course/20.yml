@@ -1,0 +1,13 @@
+---
+
+- name: remove packages
+  hosts: k8s
+
+  tasks:
+    - name: remove packages
+      dnf:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - httpd
+        - nginx

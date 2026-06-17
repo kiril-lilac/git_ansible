@@ -1,0 +1,9 @@
+---
+
+- name: Random number
+  hosts: k8s
+
+  tasks:
+    - name: Print random number
+      debug:
+        msg: "{{ 100 | random }}"

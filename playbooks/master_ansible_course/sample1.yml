@@ -1,0 +1,8 @@
+---
+- name: Playbook2
+  hosts: k8s
+  tasks:
+    - name: install python3
+      dnf:
+        name: python3
+        state: present

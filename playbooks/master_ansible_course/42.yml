@@ -1,0 +1,13 @@
+---
+
+- name: Jinja
+  hosts: k8s
+
+  vars:
+    color: Orange
+
+
+  tasks:
+    - name: Print name
+      debug:
+        msg: "{{ color | replace('color', 'Yellow')  }}"

@@ -1,0 +1,10 @@
+---
+
+- name: Create users
+  hosts: k8s
+
+  tasks:
+  - name: Create a user 'johnd' with a home directory
+    ansible.builtin.user:
+      name: devops
+      create_home: false

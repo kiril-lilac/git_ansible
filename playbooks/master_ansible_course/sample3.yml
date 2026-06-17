@@ -1,0 +1,16 @@
+---
+
+- name: Install apache
+  hosts: k8s
+  vars:
+    package: apache2
+  tasks:
+    - name: ensure apache 
+      dnf:
+        name: "{{ package }}"
+        state: present
+
+    - name: service up
+      service:
+        name: "{{ package }}"
+        state: started

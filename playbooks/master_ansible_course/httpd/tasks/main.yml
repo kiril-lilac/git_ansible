@@ -1,0 +1,15 @@
+---
+# tasks file for httpd
+
+- name: Update httpd
+  dnf:
+    name: httpd
+    state: latest
+
+- name: Check httpd version 
+  shell: rpm -qa | grep "^httpd-[[:digit:]]" 
+  register: version_output 
+  tags: check_version
+ 
+- debug: 
+    msg: "{{ version_output.stdout }}"

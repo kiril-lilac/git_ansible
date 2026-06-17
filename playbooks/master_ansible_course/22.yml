@@ -1,0 +1,13 @@
+---
+
+- name: Print hostname
+  hosts: k8s
+
+  tasks:
+  - name: Display hostname
+    shell: hostname
+    register: host_output
+
+
+  - debug:
+      msg: "{{ host_output.stdout_lines }}"

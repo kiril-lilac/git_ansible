@@ -1,0 +1,19 @@
+- name: Playbook
+
+  hosts: k8s[0]
+
+  tasks:
+
+    -
+
+      debug:
+
+         msg: "{{ '/etc/ansible/ansible.cfg' | basename }}"
+
+    -
+
+      debug:
+
+         msg: "{{ '/etc/ansible/ansible.cfg' | dirname }}"
+
+

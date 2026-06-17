@@ -1,0 +1,12 @@
+---
+
+- name: Install packages
+  hosts: k8s
+  
+  tasks:
+
+  - name: Install apache
+    dnf:
+      name: httpdx
+      state: present
+    ignore_errors: true

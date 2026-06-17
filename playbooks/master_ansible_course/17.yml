@@ -1,0 +1,26 @@
+---
+
+- name: 16
+  hosts: k8s
+  
+
+  tasks:
+
+    - name: Copy inv file
+      copy:
+        src: /home/ansible/git_ansible/inventory/inventory
+        dest: /etc/inventory.txt
+
+    - name: Check if file exists
+      stat:
+        path: /etc/inventory.txt
+      register: output
+
+#    - debug:
+#       msg: "{{ output }}"
+
+    - name: Update httpd if inv exists
+      dnf:
+        name: httpd
+        state: latest
+      when: output.stat.exists

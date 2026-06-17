@@ -1,0 +1,16 @@
+---
+
+- name: Print info
+  hosts: localhost
+ 
+  vars:
+    numbers:
+      - 10
+      - 20 
+      - 30 
+
+  tasks:
+
+  - name: Print numbers var
+    debug:
+      msg: "{{ numbers | min }}"

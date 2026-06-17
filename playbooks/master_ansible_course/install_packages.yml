@@ -1,0 +1,29 @@
+---
+
+- name: Install packages
+  hosts: k8s
+  gather_facts: no
+
+  vars:
+    packages:
+      - nginx
+      - dnsutils
+    services:
+      - nginx
+      - httpd
+
+  tasks:
+    - name: install packages
+      dnf: 
+        name: "{{ item }}"
+        state: present
+      loop: 
+        - "{{ packages }}"
+
+    - name: Start packages
+      systemd:
+        name: "{{ item }}"
+        state: started
+      loop: "{{ services }}"
+
+

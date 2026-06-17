@@ -1,0 +1,13 @@
+---
+
+- name: Jinja
+  hosts: k8s
+
+  vars:
+    your_name: Devops
+
+
+  tasks:
+    - name: Print name
+      debug:
+        msg: "{{ your_name | upper }}"

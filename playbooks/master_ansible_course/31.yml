@@ -1,0 +1,15 @@
+- name: Playbook
+
+  hosts: k8s
+
+  tasks:
+
+    - name: run sleep
+
+      command: sleep 60
+
+      async: 70
+
+      poll: 5
+
+

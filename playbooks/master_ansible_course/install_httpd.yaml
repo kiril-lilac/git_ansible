@@ -1,0 +1,14 @@
+---
+
+- name: httpd setup
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: install httpd
+      dnf:
+        name: "{{ package }}"
+        state: present

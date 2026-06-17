@@ -1,0 +1,13 @@
+--- 
+
+- name: Install httpd on Fedora
+  hosts: k8s
+  
+  tasks:
+
+  - name: Print all available facts
+    ansible.builtin.debug:
+      var: ansible_facts['distribution']
+
+
+
