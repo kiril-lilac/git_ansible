@@ -20,3 +20,31 @@
           - "{{ vgs_output.stdout_lines }}"  
           - "{{ pvs_output.stdout_lines }}"
            
+  - name: Pause to verify groups
+    pause:
+
+
+  - name: Drain the node
+    shell: kubectl --kubeconfig /etc/kubernetes/admin.conf drain k8s-worker01 --ignore-daemonsets --delete-emptydir-data
+    register: drain_output
+
+  - debug:
+      msg: "{{ drain_output.stdout_lines }}"
+
+  - name: Pause to verify drain
+    pause:
+
+
+  - name: Backup containerd config
+    copy:
+      src: /etc/containerd/config.toml
+      dest: /etc/containerd/config.toml_backup
+      remote_src: true
+      mode: preserve
+
+  - name: Backup chrony config
+    copy:
+      src: /etc/chrony.conf
+      dest: /etc/chrony.conf_backup
+      remote_src: true
+      mode: preserve
