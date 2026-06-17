@@ -97,4 +97,7 @@
   - name: Verify groups again
     pause:
 
+#  - name: Shutdown host
+#     shell: shutdown now
+
 
