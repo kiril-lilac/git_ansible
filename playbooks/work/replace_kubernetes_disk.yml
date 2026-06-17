@@ -1,0 +1,19 @@
+---
+
+- name: Repalce disk on a kubernetes node
+  hosts: k8s[1]
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Get volume group info
+    shell: vgs
+    register: vgs_output
+
+  - name: Get physical volume info
+    shell: pvs
+    register: pvs_output
+
+  - debug:
+      msg: "{{ vgs_output.stdout_lines }}"
+           
