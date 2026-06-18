@@ -1,0 +1,94 @@
+
+
+---
+
+- name: Repalce disk on a kubernetes node
+  hosts: "{{ site }}_ecp_w"
+  become: true
+  gather_facts: false
+
+  vars:
+    vg_name: VolBDSCStore
+
+  tasks:
+  - name: Get volume group info
+    shell: vgs
+    register: vgs_output
+
+  - name: Get physical volume info
+    shell: pvs
+    register: pvs_output
+
+  - name: Show volume info
+    debug:
+      msg:
+          - "{{ vgs_output.stdout_lines }}"
+          - "{{ pvs_output.stdout_lines }}"
+
+  - name: Pause to verify groups
+    pause:
+
+
+  - name: Drain the node
+    shell: /usr/bin/kubectl --kubeconfig /etc/kubernetes/admin.conf drain k8s-worker01 --ignore-daemonsets --delete-emptydir-data
+
+  - name: Backup containerd config
+    copy:
+      src: /etc/containerd/config.toml
+      dest: /etc/containerd/config.toml_backup
+      remote_src: true
+      mode: preserve
+
+  - name: Backup chrony config
+    copy:
+      src: /etc/chrony.conf
+      dest: /etc/chrony.conf_backup
+      remote_src: true
+      mode: preserve
+
+  - name: Execute steps in ERE GUI
+    pause:
+      prompt: "Execute steps in ERE GUI (add instructions)"
+
+  - name: Get volume group info
+    shell: vgs
+    register: vgs_output2
+
+  - name: Get physical volume info
+    shell: pvs
+    register: pvs_output2
+
+  - name: Show volume info
+    debug:
+      msg:
+          - "{{ vgs_output2.stdout_lines }}"
+          - "{{ pvs_output2.stdout_lines }}"
+
+  - name: Pause to verify volume groups are removed
+    pause:
+
+  - name: Get volume group info
+    shell: vgs --noheadings -o vg_name
+    register: vgs_output3
+
+  - name: Get physical volume info
+    shell: pvs | grep VolBDSCStore | awk '{print$1}' | tr '\n' ' '
+    register: pvs_output3
+
+
+  - name: Set fact if volume group exists
+    set_fact:
+      vg_exists: "{{ vg_name in (vgs_output3.stdout_lines | map('trim') | list) }}"
+
+  - name: Remove the vg/pv
+    shell: vgchange -an {{ vg_name }} && vgremove {{ vg_name }} && pvremove {{ pvs_output3.stdout }}
+    when: vg_exists
+    register: removal_output
+
+
+  - debug:
+      msg: "{{ removal_output.stdout_lines }}"
+
+
+  - name: Shutdown host
+    shutdown:

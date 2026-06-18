@@ -1,0 +1,37 @@
+---
+
+- name: Repalce disk on a kubernetes node
+  hosts: k8s[1]
+  become: true
+  gather_facts: false
+
+  vars:
+    vg_name: vg_group
+
+  tasks:
+  - name: Get volume group info
+    shell: vgs
+    register: vgs_output
+
+  - name: Get physical volume info
+    shell: pvs
+    register: pvs_output
+
+  - name: Show volume info
+    debug:
+      msg:
+          - "{{ vgs_output.stdout_lines }}"  
+          - "{{ pvs_output.stdout_lines }}"
+
+  - name: Get volume group info
+    shell: vgs --noheadings -o vg_name
+    register: vgs_output3
+
+
+  - name: Set fact if volume group exists
+    set_fact:
+      vg_exists: "{{ vg_name in (vgs_output3.stdout_lines | map('trim') | list) }}" 
+
+  - name: Remove the volume group if it exists
+    command: vgremove -y {{ vg_name }}
+    when: vg_exists          

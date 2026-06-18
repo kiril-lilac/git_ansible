@@ -1,0 +1,17 @@
+- name: Replace disk on a Kubernetes node with NVMe device
+  hosts: k8s[1]
+  become: true
+  gather_facts: false
+
+  vars_prompt:
+    - name: nvme_device
+      prompt: "Enter the NVMe device name (e.g., nvme0n1)"
+      private: no
+
+  tasks:
+    - name: Display the entered device name
+      debug:
+        msg: "Using device: /dev/{{ nvme_device }}"
+
+    - name: Overwrite the NVMe disk with zeros
+      shell: "dd if=/dev/zero of=/dev/{{ nvme_device }} bs=1M count=1000"
