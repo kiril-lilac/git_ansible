@@ -28,7 +28,7 @@
 
 
   - name: Drain the node
-    shell: kubectl --kubeconfig /etc/kubernetes/admin.conf drain k8s-worker01 --ignore-daemonsets --delete-emptydir-data
+    shell: /usr/bin/kubectl --kubeconfig /etc/kubernetes/admin.conf drain k8s-worker01 --ignore-daemonsets --delete-emptydir-data
     register: drain_output
     tags: drain
 

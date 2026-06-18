@@ -16,3 +16,30 @@
 
     - name: Overwrite the NVMe disk with zeros
       shell: "dd if=/dev/zero of=/dev/{{ nvme_device }} bs=1M count=1000"
+
+    - name: Create the volume group
+      shell: vgcreate /dev/vg_tmp /dev/{{ nvme_device }} /dev/{{ nvme_device }}
+
+    - name: Execute steps in ERE
+      pause:
+
+    - name: Prevent new pods from creating
+      shell: until /usr/bin/kubectl --kubeconfig /etc/kubernetes/admin.conf get node $(hostname) &>/dev/null; do sleep 1; echo "node still not present"; done && kubectl --kubeconfig /etc/kubernetes/admin.conf cordon $(hostname); kubectl --kubeconfig /etc/kubernetes/admin.conf get node $(hostname)
+
+    - name: Restore containerd config
+      copy:
+	src: /etc/containerd/config.toml_backup
+	dest: /etc/containerd/config.toml
+	remote_src: true
+	mode: preserve
+
+    - name: Restore chrony config
+      copy:
+	src: /etc/chrony.conf_backup
+	dest: /etc/chrony.conf
+	remote_src: true
+	mode: preserve      
+
+
+    - name: Drain the node
+      shell: /usr/bin/kubectl --kubeconfig /etc/kubernetes/admin.conf uncordon k8s-worker01
